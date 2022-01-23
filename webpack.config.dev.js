@@ -1,18 +1,11 @@
+//================= Archivo de configuración para el modo de desarrollo ===================
+
 const path = require('path');
-//HTML Webpack: npm install html-webpack-plugin -D
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-//Mini CSS Extract: npm install mini-css-extract-plugin css-loader -D
-//Stylus Loader: npm install stylus stylus-loader -D
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-//Copy Webpack: npm install url-loader file-loader -D
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-//CSS Minimizer y Terser:  npm install css-minimizer-webpack-plugin terser-webpack-plugin -D
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin'); //Optimización de Javascript
-//Dot Env: npm install dotenv-webpack -D
 const DotEnv = require('dotenv-webpack');
-//Clean Webpack Plugin: npm install clean-webpack-plugin -D
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
   entry: './src/index.js',
@@ -21,7 +14,13 @@ module.exports = {
     filename: '[name].[contenthash].js',
     assetModuleFilename: 'assets/images/[hash][ext][query]',
   },
-  mode: 'production',
+  mode: 'development',
+  devtool: 'source-map',
+  /*source-map permite observar con devTools (Chrome) en sources, links de cada parte del main.js generado
+  a la parte del código que hicimos correspondiente, de esta manera es mucho más legible y podemos debuggear mejor*/
+
+  //watch: true, //Para observar constantemente cambios y compilar automaticamente
+  //No es necesario usar junto con devServer ya que por si solo cumple con esa función
   resolve: {
     extensions: ['.js'],
     //Se usan alias para hacer referencia a otras ubicaciones en el sistema de archivos y sea más fácil buscar
@@ -84,15 +83,16 @@ module.exports = {
       ],
     }),
     new DotEnv(),
-    new CleanWebpackPlugin(),
+    //Instalar Bundle Analyzer: npm install webpack-bundle-analyzer -D
+    new BundleAnalyzerPlugin(),
+    //Generar archivo de análisis del proyecto: npx webpack --profile --json > stats.json
+    //Leer estadísticas del archivo generado: npx webpack-bundle-analyzer stats.json
   ],
-  optimization: {
-    minimize: true,
-    minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
+  //Instalar servidor de desarrollo: npm install webpack-dev-server -D
+  devServer: {
+    static: path.join(__dirname, 'dist'),
+    compress: true,
+    historyApiFallback: true,
+    port: 3006,
   },
 };
-
-/*Ejecución: npx webpack --mode production --config webpack.config.js
-    Colocar comando en los scripts
-    Nota: no es necesario el parámetro --config
-*/
